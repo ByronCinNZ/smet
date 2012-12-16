@@ -1,0 +1,15 @@
+//  This shows how to add tiling support to the output.
+// theTile mask here is only for show.   The output file added to the orthoigen 
+// is used as the mask for generating named tile files.
+//
+// This example shows a 10 meter per pixel in a 10 kilometer tile.  Note:
+// when tiling is enabled any meter pixel overrides are ignored and is computed
+// based on the tiling parameters.
+//
+
+igen.tiling.type: ossimTiling
+igen.tiling.tiling_distance:  10 10
+igen.tiling.tiling_distance_type: seconds
+igen.tiling.delta: .16
+igen.tiling.delta_type: per_pixel
+igen.tiling.padding_size_in_pixels: 0 0

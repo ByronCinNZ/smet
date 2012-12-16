@@ -1,0 +1,464 @@
+APPENDIX 2-A
+Digital Raster Graphic - METADATA TEMPLATE 
+
+
+INFORMATION ABOUT THE TEMPLATE
+
+  1. Metadata elements are in uppercase followed by a value.
+
+  2. Numbers preceding data elements refer to section numbers in the "Content
+     Standards for Digital Geospatial Metadata", June 8, 1994. 
+
+  3. Section numbers preceded by an asterisk (*) indicate file specific
+     elements.  These numbers are followed by the element description from the
+     "Content Standards for Digital Geospatial Metadata" and bracketed comments
+     where applicable. 
+
+  4. Element values specified by the "Content Standards for Digital Geospatial
+     Metadata" are prefaced and followed by double quotation marks.
+
+
+
+--Identification Information-- 
+
+-Citation-
+
+8.1       ORIGINATOR: USGS
+
+*8.2      PUBLICATION DATE:  19950807  
+
+*8.4      TITLE:  Battle Mountain  
+
+8.6       GEOSPATIAL DATA PRESENTATION FORM:  "map"   
+
+
+-Publication Information-
+
+8.8.1     PUBLICATION PLACE:  Reston, VA   
+
+8.8.2     PUBLISHER:  USGS 
+
+
+-Description-
+
+
+1.2.1     ABSTRACT:  The Digital Raster Graphic (DRG) is a raster image of a 
+          scanned USGS topographic map including the collar information,
+          georeferenced to the UTM grid. 
+
+1.2.2     PURPOSE:  A DRG is useful as a source or background layer in a  GIS,
+          as a means to perform quality assurance on other digital products,
+          and as a source for the collection and revision of DLG data.  DRG's
+          can also be merged with other digital data, e.g. DEM's or DOQ's, to
+          produce a hybrid digital file.    
+
+*1.2.3    SUPPLEMENTAL INFORMATION:  494473.096406, 4541338.811425
+
+
+-Time period of content- 
+  Single Date/Time
+
+*9.1.1    CALENDAR DATE:  19950807
+
+1.3.1     CURRENTNESS REFERENCE:  "Ground Condition"
+
+
+-Status-
+
+1.4.1     PROGRESS:  "Complete"   
+
+1.4.2     MAINTENANCE AND UPDATE FREQUENCY:  "Irregular" 
+
+
+-Spatial Domain- 
+
+  Bounding Coordinates  
+
+*1.5.1.1  WEST BOUNDING COORDINATE:  -117.000000
+
+*1.5.1.2  EAST BOUNDING COORDINATE:  -116.000000  
+
+*1.5.1.3  NORTH BOUNDING COORDINATE:  41.000000 
+
+*1.5.1.4  SOUTH BOUNDING COORDINATE:  40.500000 
+
+
+-Keywords- 
+
+  Theme 
+  
+1.6.1.1   THEME KEYWORD THESAURUS:  "None"    
+
+1.6.1.2   THEME KEYWORD:  digital raster graphic   
+
+1.6.1.2   THEME KEYWORD:  DRG   
+
+1.6.1.2   THEME KEYWORD: topographic map  
+
+  Place
+
+1.6.2.1   PLACE KEYWORD THESAURUS: Department of Commerce, 1977, Countries, 
+          Dependencies, Areas of Special Sovereignty, and their Principal   
+          Administrative Divisions (Federal Information Processing   Standard
+          10-3): Washington, Department of Commerce, National Institute of
+          Standards and Technology.  
+
+*1.6.2.2  PLACE KEYWORD:  US
+
+1.6.2.1   PLACE KEYWORD THESAURUS:  Department of Commerce, 1987, Codes for 
+          the Identification of the States, The District of Columbia and the
+          Outlying Areas Of The United States, and Associated Areas (Federal
+          Information Processing Standard 5-2): Washington, Department of
+          Commerce, National Institute of Standards and Technology.  
+
+*1.6.2.2  PLACE KEYWORD:  NV
+
+*1.6.2.2  PLACE KEYWORD:  
+
+*1.6.2.2  PLACE KEYWORD:  
+
+*1.6.2.2  PLACE KEYWORD:  
+
+1.7       ACCESS CONSTRAINTS:  "None"   
+
+1.8       USE CONSTRAINTS:  Acknowledgment of the USGS would be appreciated in
+          products derived from these data.  
+
+1.11      DATA SET CREDIT: Not Applicable.
+
+
+
+--Data Quality Information--    
+
+-Attribute Accuracy-   
+
+2.1  ATTRIBUTE ACCURACY REPORT:  The DRG is an 8-bit color image that employs
+     a color palette to ensure uniform colors throughout a particular DRG
+     series.  All DRG's within a series must have the same RGB value.    
+
+2.2  LOGICAL CONSISTENCY REPORT:  Not Applicable
+
+2.3  COMPLETENESS REPORT:  The DRG is a faithfully reproduced digital image of
+     the original source map.  Some differences may be detected between the
+     source graphic used and the DRG due to the RGB values assigned that
+     particular color.  The intent is to recreate those colors as near as
+     possible.  Data completeness for DRG files reflect content of the source
+     graphic.  Features may have been eliminated or generalized on the source
+     graphic due to scale and legibility constraints.  For information on
+     collection and inclusion criteria, see U.S. Geological Survey, 1994,
+     Standards for 1:24,000-Scale Digital Line Graphs and Quadrangle Maps: 
+     National Mapping Program Technical Instructions and U.S. Geological
+     Survey, 1994, Standards for Digital Line Graphs:  National Mapping Program
+     Technical Instructions.
+
+
+-Positional Accuracy- 
+
+  Horizontal Positional Accuracy   
+
+2.4.1.1   HORIZONTAL POSITIONAL ACCURACY REPORT:  While the datum of the
+          published map is retained to be consistent with other USGS digital
+          data, this image is cast on the UTM and may be INCONSISTENT with the
+          credit note on the image collar. 
+
+  Vertical Positional Accuracy   
+
+2.4.2.2   VERTICAL POSITIONAL ACCURACY REPORT:  Refer to the DRG collar for
+          information about vertical positional accuracy. 
+
+-Lineage-
+
+  Source Information  
+
+     Source Citation   
+
+2.5.1.5   SOURCE CITATION ABBREVIATION:  map1
+
+8.1       ORIGINATOR:  USGS   
+
+*8.2      PUBLICATION DATE:   1982
+
+*8.4      TITLE:  Battle Mountain
+           
+
+8.6      GEOSPATIAL DATA PRESENTATION FORM:  "map"    
+
+
+
+--Publication Information--   
+
+8.8.1     PUBLICATION PLACE:  Reston, VA   
+
+8.8.2     PUBLISHER:  USGS  
+
+*2.5.1.2  SOURCE SCALE DENOMINATOR:  100000
+
+2.5.1.3   TYPE OF SOURCE MEDIA:  "paper"
+
+-Source Time Period of Content- 
+
+  Single Date/Time  
+
+*9.1.1    CALENDAR_DATE:  1982
+
+2.5.1.4.1 SOURCE CURRENTNESS REFERENCE:  "ground condition"    
+
+2.5.1.6   SOURCE CONTRIBUTION:  The source map is scanned to produce the DRG. 
+
+
+-Process Step-    
+
+2.5.2.1   PROCESS DESCRIPTION:  The production procedures, instrumentation, 
+          hardware, and software used in the collection of standard DRG
+          products vary depending on systems used at the contract, cooperator
+          or USGS production sites.  The majority of DRG data sets are
+          acquired through government contract.  The process step describes,
+          in general, the process used in the production of standard DRG data
+          sets.
+
+          1. Production of a DRG begins with the scanning of a paper
+          7.5-minute topographic map (map1) on a high-resolution scanner.
+          Scanning resolutions range from 500 - 1000 dpi with the output file
+          running between 160-300 mb.  
+
+          2. Removal of screens (descreening) and color quantization to reduce
+          the number of colors also takes place during the scanning phase.  
+
+          3. The raw scan file is then transformed and georeferenced using UTM
+          coordinates of the sixteen 2.5-minute grid ticks, which are obtained
+          using the in-house produced program COORDAT and stored in a ground
+          control file.  Those sixteen 2.5-minute ticks are interactively
+          visited and assigned their respective UTM coordinates. USGS program
+          XSHAPES4 then performs a piecewise linear rubber sheet
+          transformation.
+          4. An output resolution of 2.4 meters (8.2 feet) is chosen in order
+          to resample the file to 250 dpi.
+
+          5.  The image file is converted to a TIFF and further reduced by
+          converting the file to a run length encoding PackBit
+          compression(type 32773). 
+
+          6.  The color palette of the compressed DRG is then standardized by
+          replacing the original RGB values assigned during the scanning
+          process with standard RGB value combinations using the in-house
+          produced TIFFREMAP program.
+
+          7.  Prior to archiving the DRG undergoes the following quality
+          assurance procedures:    
+
+               a. The color index values of each DRG are checked to ensure  
+               the RGB combinations are consistent with the standardized
+               color palette.    
+
+               b. All DRG files are inspected to ensure that they are   
+               geometrically consistent with normal map presentation.  
+
+               c. Selected DRG's are checked to ensure that data elements in
+               the DRG metadata file correspond to the map collar information
+               and to the information in the associated image file. 
+
+               d. Selected DRG's are checked for georeferencing accuracy by 
+               comparing the book value of latitude and longitude tick marks
+               with corresponding tick intersections in the DRG image.    
+
+               e. Transformations are checked on selected DRG's by comparing
+               the positions of well defined points, such as UTM grid
+               intersections in the graphic product, with the corresponding
+               image points in the DRG.   
+
+2.5.2.2   SOURCE USED CITATION ABBREVIATION:  map1
+
+
+*2.5.2.3  PROCESS DATE:  19950807 
+
+
+
+--Spatial Data Organization Information--   
+
+
+3.2       DIRECT SPATIAL REFERENCE METHOD:  "Raster"    
+
+-Raster Object Information-   
+
+3.4.1     RASTER OBJECT TYPE:  "Pixel"  
+
+*3.4.2    ROW COUNT:  5963
+
+*3.4.3    COLUMN COUNT:  10107
+
+
+
+--Spatial Reference Information--    
+
+-Horizontal Coordinate System Definition- 
+
+  Planar   
+
+4.1.2.2.1 GRID COORDINATE SYSTEM NAME:  "Universal Transverse Mercator"
+          Universal Transverse Mercator (UTM) 
+
+*4.1.2.2.2.1   UTM ZONE NUMBER:  11
+
+  Transverse Mercator   
+
+4.1.2.1.2.17   SCALE FACTOR AT CENTRAL MERIDIAN:  0.9996  
+
+*4.1.2.1.2.2   LONGITUDE AT CENTRAL MERIDIAN:  -117.000
+
+4.1.2.1.2.3    LATITUDE OF PROJECTION ORIGIN:  0.0   
+
+4.1.2.1.2.4    FALSE EASTING:  500000.   
+
+4.1.2.1.2.5    FALSE NORTHING:  0.0 
+
+
+
+--Planar Coordinate Information--   
+
+4.1.2.4.1 PLANAR COORDINATE ENCODING METHOD:  "row and column"    
+
+-Coordinate Representation-  
+
+*4.1.2.4.2.1   ABSCISSA RESOLUTION:  10.160000  
+
+*4.1.2.4.2.2   ORDINATE RESOLUTION:  -10.160000 
+
+4.1.2.4.4 PLANAR DISTANCE UNITS:  "meters"    
+
+
+-Geodetic Model-  
+
+*4.1.4.1  HORIZONTAL DATUM NAME:  North American Datum 1927
+
+*4.1.4.2  ELLIPSOID NAME:  Clarke 1866
+
+*4.1.4.3  SEMI-MAJOR AXIS:  6378206.4 
+
+*4.1.4.4  DENOMINATOR OF FLATTENING RATIO:  294.98
+
+
+
+--Entity and Attribute Information--   
+
+-Overview Description-  
+
+5.2.1     Each raster entity or pixel contains a color index from 0 through 12
+          referencing a color palette of RGB values from 0 through 255 in
+          which the standard colors used in the DRG are defined.
+
+                   
+               Index     R    G    B    Color   
+               
+               0         0    0    0    Black 
+               1         255  255  255  White  
+               2         0    151  164  Blue  
+               3         203  0    23   Red 
+               4         131  66   37   Brown
+               5         201  234  157  Green 
+               6         137  51   128  Purple 
+               7         255  234  0    Yellow 
+               8         167  226  226  Light Blue 
+               9         255  184  184  Light Red
+               10        218  179  214  Light Purple   
+               ll        209  209  209  Grey
+               12        207  164  142  Light Brown
+
+
+5.2.2     ENTITY AND ATTRIBUTE DETAIL CITATION: Draft Standards for Digital 
+          Raster Graphic.   
+
+
+
+--Distribution Information--   
+
+-Distributor- 
+
+  Contact Organization Primary   
+
+10.1.2    CONTACT ORGANIZATION:  Earth Science Information Center,  U.S.  
+          Geological Survey Contact Address   
+
+10.4.1    ADDRESS TYPE:  "mailing address"   
+
+10.4.2    ADDRESS:  507 National Center   
+
+10.4.3    CITY:  Reston   
+
+10.4.4    STATE OR PROVINCE:  Virginia   
+
+10.4.5    POSTAL CODE:  22092   
+
+10.5      CONTACT VOICE TELEPHONE:  1 800 USA MAPS   
+
+10.5      CONTACT VOICE TELEPHONE:  1 703 648 6045   
+
+6.3       DISTRIBUTION LIABILITY:  Although these data have been processed
+          successfully on a computer system at the USGS, no warranty expressed 
+          or implied is made by the USGS regarding the use of the data on any
+          other system, nor does the act of distribution constitute any such 
+          warranty. The USGS will warrant the delivery of this product in
+          computer-readable format and will offer appropriate adjustment of
+          credit when the product is determined unreadable by correctly
+          adjusted computer input peripherals, or when the physical medium is
+          delivered in damaged condition.  Requests for adjustment of credit
+          must be made within 90 days from the date of this shipment from the
+          ordering site.
+
+-Standard Order Process- 
+
+  Digital Form
+
+     Digital Transfer Information   
+
+6.4.2.1.1 FORMAT NAME:  TIFF   
+
+6.4.2.1.2 FORMAT VERSION NUMBER:  5.0   
+
+6.4.2.1.6 FILE DECOMPRESSION TECHNIQUE:  PackBit  
+
+  Digital Transfer Option
+
+     Offline Options   
+
+6.4.2.2.2.1    OFFLINE MEDIA:  "CD-ROM"
+
+6.4.2.2.2.3    RECORDING FORMAT:  "ISO 9660";  DRG image files with
+               corresponding metadata files.
+
+6.4.3     FEES:  For delivery on CD-ROM, the charge is $32 per CD-ROM 
+
+
+
+--Metadata Reference Information--   
+
+*7.1      METADATA DATE:  19950807
+
+  Metadata Contact 
+
+     Contact Organization Primary   
+
+10.1.2    CONTACT ORGANIZATION:  U.S. Geological Survey 
+
+  Contact Address   
+
+10.4.1    ADDRESS TYPE:  "mailing address"   
+
+10.4.2    ADDRESS:  590 National Center   
+
+10.4.3    CITY:  Reston   
+
+10.4.4    STATE OR PROVINCE:  Virginia   
+
+10.4.5    POSTAL CODE:  22092   
+
+10.5      CONTACT VOICE TELEPHONE:  1 703 648 4533   
+
+10.8      CONTACT ELECTRONIC MAIL ADDRESS: Copies of this publication are
+          available from anonymous File Transfer Protocol (anonymous FTP);
+          ftp://fgdc.er.usgs.gov/
+
+7.5       METADATA STANDARD NAME:  "Content Standards for Digital Geospatial
+          Metadata"
+
+7.6       METADATA STANDARD VERSION:  19940608
+

@@ -1,0 +1,5 @@
+band1.max_value:  255.000000000000000
+band1.min_value:  1.000000000000000
+band1.null_value:  0.000000000000000
+number_bands:  1
+scalar_type:  ossim_uint8

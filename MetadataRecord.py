@@ -4,7 +4,7 @@
 import httplib, urllib, urllib2, requests
 from lxml import etree
 from pythonutils import OrderedDict
-from multipart import Multipart
+##from multipart import Multipart # no longer needed
 from lxml.builder import E
 
 
@@ -310,7 +310,7 @@ class metadataRecord(object):
 
         return etree.tostring(tree)
     
-       
+    # No longer needed -- the UUID action argument deprecates this
     def newGuid(self, mdRecord):
         
         tree = etree.XML(mdRecord) 
@@ -323,7 +323,7 @@ class metadataRecord(object):
 
 class GNConnection(object):
     
-    
+    # Should these be in SMETconfig.xml -- check?
     GNServer = ""
     user = ""
     password = ""
@@ -358,7 +358,7 @@ class GNConnection(object):
     
     
     def connect(username, pword):
-        
+        # Do we have security issues with clear case passwords?
 ##        GN = GNConnection
         path = '/geonetwork/srv/xml.user.login'      
         payload = {'username':username, 'password':pword}
@@ -414,12 +414,13 @@ class GNConnection(object):
                             data=param, 
                             headers={"Content-type":"text/xml"},
                             cookies={'JSESSIONID':GNConnection.cookie})
-        txt = r.text.encode("UTF-8")
+        txt = str(r.content) #r.text.encode("UTF-8")
 
         return txt
     
     xmlcall = staticmethod(xmlcall)
     
+		# I don't think we need this anymore -- check
     def httpcall(service, param):
         
         header = {'Accept': 'image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*, ',

@@ -351,6 +351,7 @@ class util(object):  # util class includes methods not dependent on geodatatype
     
     # getUNCName -Retrieves the UNC path of the data set selected to give 
     # unversal access on the network
+		# -- Make cross platform
     def getUNCName(fullpath):
         try:
             import win32wnet
@@ -415,6 +416,8 @@ class util(object):  # util class includes methods not dependent on geodatatype
     
     
     # getProjMData -retrieves projection metadata from a WKT projection string
+		# -- Can we connect to a live service? - low priority
+		# -- At least provide method of lookup (Strategy Pattern)
     def getProjMData(sourceSrs):
         
         try:

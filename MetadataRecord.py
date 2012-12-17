@@ -4,7 +4,7 @@
 import httplib, urllib, urllib2, requests
 from lxml import etree
 from pythonutils import OrderedDict
-##from multipart import Multipart # no longer needed
+
 from lxml.builder import E
 
 
@@ -13,9 +13,7 @@ class metadataRecord(object):
     
     def GetUserInfo(self, user, pword):
 
-        txt = GNConnection.xmlcall('xml.user.list', '<request/>')
-        print txt
-        tree = etree.XML(txt)
+        tree = GNConnection.xmlcall('xml.user.list')
         unames = tree.findall('.//username')
         record = None
         
@@ -95,8 +93,7 @@ class metadataRecord(object):
 
         # Select iso 19139 template metadata from GeoNework xml.search 
         
-        txt = GNConnection.xmlcall('q', '<request><template>y</template><fast>index</fast></request>') 
-        tree = etree.XML(txt)
+        tree = GNConnection.xmlcall('q', template='y', fast='index') 
         
         rows = tree.findall('.//metadata')
         n = 1
@@ -123,13 +120,8 @@ class metadataRecord(object):
 
         # Select iso 19139 template metadata from the data column. 
         
-        txt1 = GNConnection.xmlcall('xml.metadata.get', '<request><uuid>' + fileID + '</uuid></request>')    
-        
-        tree=etree.XML(txt1)
+        tree = GNConnection.xmlcall('xml.metadata.get', uuid=fileID)    
         print tree
-##        geonetinfo = tree.find('{http://www.fao.org/geonetwork}info') 
-##        print etree.tostring(geonetinfo, pretty_print=True)
-##        tree.remove(geonetinfo) # No longer needed in GN 2.8
            
         tmpltXML = etree.tostring(tree,pretty_print=True)
                    
@@ -152,104 +144,6 @@ class metadataRecord(object):
                     rep += i*'\t'
                     rep += "%s : \t %s \n" % (item, value)
         return rep
-
-
-##    def submitMDRecord(self, mdRecord, user, pword):
-##        data = self.newGuid(mdRecord)
-##        
-##        n = {}
-##
-##        n['insert_mode'] = '1'
-##        n['file_type'] = 'single'
-##        n['data'] = ''
-##        n.file('mefFile','c:\\temp\\text.mxl',data,{'Content-Type':'text/xml'})
-##        n.field('template','n')
-##        n.field('schema','iso19139')
-##        n.field('title','')
-##        n.field('uuidAction','generateUUID')
-##        n.field('styleSheet','_none_')
-##        n.field('group','2')
-##        n.field('category','_none_')
-##        ct,body = n.get()
-##
-##        header2 = {"Host":"Localhost:8080", 
-##            "Content-type": ct, 
-##            "Accept": "image/gif, image/jpeg, image/pjpeg, image/pjpeg, application/x-shockwave-flash, *",
-##            "Connection": "Keep-Alive", 
-##            "cookie": cookie}
-##
-##        file = {body}
-##        r = requests.post("http://" + GN.GNServer + "/geonetwork/srv/mef.import, files=file")
-##        httpServ = httplib.HTTPConnection("127.0.0.1", 8080)
-##        httpServ.set_debuglevel(0)
-##        httpServ.connect()
-##        param1 = urllib.urlencode({'username':user, 'password':pword})
-##
-##        header1 = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Connection": "keep-alive", "Keep-Alive":"300"}
-##        httpServ.request('POST', '/geonetwork/srv/en/xml.user.login', param1, header1)
-##
-##        conn = httpServ.getresponse()
-##        print conn.status
-##        print conn.reason
-##        print conn.read()
-##
-##        cookie = conn.getheader('set-cookie')
-##
-##        #param2 = urllib.urlencode({'any':'Basins'})
-##
-##        #fo = open("C:\\temp\\text.xml","r")
-##        #data = fo.read()
-##        
-##        data = self.newGuid(mdRecord)
-##        print data
-##        n = Multipart()
-##
-##        n.field('insert_mode','1')
-##        n.field('file_type','single')
-##        n.field('data','')
-##        n.file('mefFile','c:\\temp\\text.mxl',data,{'Content-Type':'text/xml'})
-##        n.field('template','n')
-##        n.field('schema','iso19139')
-##        n.field('title','')
-##        n.field('uuidAction','generateUUID')
-##        n.field('styleSheet','_none_')
-##        n.field('group','2')
-##        n.field('category','_none_')
-##        ct,body = n.get()
-##
-##        header2 = {"Host":"Localhost:8080", "Content-type": ct, "Accept": "image/gif, image/jpeg, image/pjpeg, image/pjpeg, application/x-shockwave-flash, *", 'Connection': 'Keep-Alive', 'cookie': cookie}
-##        print ct        
-##        print body
-##        print header2
-##
-##        httpServ.request('POST', '/geonetwork/srv/en/mef.import', body, header2 )
-##        txt = 'Nothing Returned!'
-##
-##        response = httpServ.getresponse()
-##        print response.reason, response.status
-##        #print response.read()
-##        if response.status == httplib.OK:
-##            print "Output from CGI request"
-##            txt = response.read()
-##            lines = txt.split('\n')
-##            for line in lines:
-##                print line.strip()
-##        httpServ.close()
-##        
-##        tree = etree.XML(txt)
-##        id = tree.text
-##        conn = psycopg2.connect("dbname='geonetwork' user='postgres' host='localhost' password='admin'")
-##        cur = conn.cursor()
-##        
-##        cur.execute("""SELECT uuid
-##                    FROM
-##                     public.metadata
-##                    WHERE public.metadata.id = '""" + id + """'""")
-##        # Step through selected records
-##        row = cur.fetchall()
-##        
-##        return row[0][0]
-##    
                     
     def submitMDRecord(self, mdRecord, user, pword):
         
@@ -266,13 +160,9 @@ class metadataRecord(object):
                             E.uuidAction('generateUUID'))
 
 
-        txt = GNConnection.xmlcall('xml.metadata.insert', etree.tostring(param2))
+        tree = GNConnection.xmlcall('xml.metadata.insert', param2)
 
-        print txt
-        tree = etree.XML(txt)
         id = tree.find('./id').text
-        #txt1 = GNConnection.xmlcall('xml.metadata.get', '<request><id>' + id + '</id></request>')
-        #tree1 = etree.XML(txt1)
         uuid = tree.find('./uuid').text
  
         return uuid, id, GNConnection.cookie 
@@ -342,100 +232,38 @@ class GNConnection(object):
         GN.rootDir = doc.find("./rootDir").text
         GN.projData = doc.find("./projData").text
     
-    
+    @staticmethod
     def setUser(username):
         
         GNConnection.user = username
-        
-    setUser = staticmethod(setUser)
     
-        
+    @staticmethod
     def setPass(pword):
         
         GNConnection.password = pword
-        
-    setPass = staticmethod(setPass)
+
     
-    
+    @staticmethod
     def connect(username, pword):
         # Do we have security issues with clear case passwords?
-##        GN = GNConnection
         path = '/geonetwork/srv/xml.user.login'      
         payload = {'username':username, 'password':pword}
         r = requests.post("http://" + GNConnection.GNServer + path, params=payload)
-##        conn = urllib2.Request("http://" + GN.GNServer + path)
-##        
-##        try:
-##            urllib2.urlopen(conn)
-##            httpServ = httplib.HTTPConnection(GN.GNServer)
-##            httpServ.set_debuglevel(0)
-##            httpServ.connect()
-##            param1 = urllib.urlencode({'username':username, 'password':pword})
-##            header1 = {"Content-type": "application/x-www-form-urlencoded", 
-##                        "Accept": "text/plain,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", 
-##                        "Connection": "keep-alive", "Keep-Alive":"300"}
-##            httpServ.request('POST', path, param1, header1)
-##
-##            conn = httpServ.getresponse()
-##            conn.read()
-##
-##            ckstr = conn.getheader('set-cookie')
-##            cook = ckstr.split(';')
-##            GN.cookie = cook[0]
-##
-##            
-##        except urllib2.URLError, e:
-##            
-##            conn.status = 400
-##
-##        return conn.status
         GNConnection.cookie = r.cookies['JSESSIONID']
         print r.status_code
         return r.status_code
-        
-    connect = staticmethod(connect)
     
-    
-    def xmlcall(service, param):
-        
-##        header = {'Accept': 'image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*, ',
-##                    'Accept-Language': 'en-nz',
-##                    'Content-Type': 'application/x-www-form-urlencoded',
-##                    'Accept-Encoding': 'gzip, deflate',
-##                    'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; SC3_Customised_IE6.0_sp1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.1)',
-##                    'Connection': 'Keep-Alive',
-##                    'Cookie': GNConnection.cookie}
-        
-        path ='/geonetwork/srv/' + service
-        print path
-        #doc = urllib2.Request('http://' + GNConnection.GNServer + path, param, header)
-        #r = requests.post("http://" + GNConnection.GNServer + path, data=param, headers={"Content-type":"text/xml"})#, cookies={'JSESSIONID':GNConnection.cookie})
+    @staticmethod
+    def xmlcall(_service, _param=E.request(), **kwargs):
+        for key, value in kwargs.items():
+            _param.append(E(key, value))
+        param = etree.tostring(_param)
+        print param
+
+        path ='/geonetwork/srv/' + _service
         r = requests.post("http://"  + GNConnection.GNServer + path, 
                             data=param, 
                             headers={"Content-type":"text/xml"},
                             cookies={'JSESSIONID':GNConnection.cookie})
-        txt = str(r.content) #r.text.encode("UTF-8")
 
-        return txt
-    
-    xmlcall = staticmethod(xmlcall)
-    
-		# I don't think we need this anymore -- check
-    def httpcall(service, param):
-        
-        header = {'Accept': 'image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*, ',
-                    'Accept-Language': 'en-nz',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; SC3_Customised_IE6.0_sp1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.1)',
-                    'Connection': 'Keep-Alive',
-                    'Cookie': GNConnection.cookie}
-        
-        path ='/geonetwork/srv/en/' + service
-        httpServ.request('POST', '/geonetwork/srv/en/mef.import', body, header2 )
-        response1 = httpServ.getresponse()
-        txt = response1.read()
-        
-        return txt
-    
-    httpcall = staticmethod(httpcall)
+        return etree.XML(str(r.content))

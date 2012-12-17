@@ -119,48 +119,18 @@ class metadataRecord(object):
     def getTemplateMDRecord(self, user, pword, fileID):
 
         # Select iso 19139 template metadata from the data column. 
-        
-        tree = GNConnection.xmlcall('xml.metadata.get', uuid=fileID)    
-        print tree
-           
-        tmpltXML = etree.tostring(tree,pretty_print=True)
-                   
-        return tree #tmpltXML    
-    
-    
-    def displayMDRecord(self,mdrecord,i=0):
-
-        rep = ""
-        for item, value in mdrecord.iteritems(): 
-            
-                if type(value).__name__ == 'OrderedDict':
-                    rep += i*'\t'
-                    rep += '%s :\n' % item
-                    i = i + 2
-                    rep += self.displayMDRecord(value,i)
-                    i = i - 2
-                else:
-
-                    rep += i*'\t'
-                    rep += "%s : \t %s \n" % (item, value)
-        return rep
+        return GNConnection.xmlcall('xml.metadata.get', uuid=fileID)
                     
     def submitMDRecord(self, mdRecord, user, pword):
-        
-        #data = self.newGuid(mdRecord)
-
-        param2 = E.request(E.data(mdRecord), 
-                            E.template('n'),
-                            E.title(''),
-                            E.styleSheet('_none_'),
-                            E.schema('iso19139'),
-                            E.group('2'),
-                            E.category('1'),
-                            E.validate('off'),
-                            E.uuidAction('generateUUID'))
-
-
-        tree = GNConnection.xmlcall('xml.metadata.insert', param2)
+        tree = GNConnection.xmlcall('xml.metadata.insert', 
+                                    data=mdRecord,
+                                    title='',
+                                    stylesheet='__non__',
+                                    schema='iso19139',
+                                    group=2, # get user group?
+                                    category=1, # ask for category?
+                                    validate='off', #validation would need additional interfaces
+                                    uuidAction='generateUUID)
 
         id = tree.find('./id').text
         uuid = tree.find('./uuid').text
@@ -199,17 +169,6 @@ class metadataRecord(object):
             path = path[:-lnode]
 
         return etree.tostring(tree)
-    
-    # No longer needed -- the UUID action argument deprecates this
-    def newGuid(self, mdRecord):
-        
-        tree = etree.XML(mdRecord) 
-        id = tree.find('.//{http://www.isotc211.org/2005/gmd}fileIdentifier')
-        guid = id.find('{http://www.isotc211.org/2005/gco}CharacterString')
-        guid.clear()
-        
-        return etree.tostring(tree)     
-                    
 
 class GNConnection(object):
     
@@ -234,12 +193,10 @@ class GNConnection(object):
     
     @staticmethod
     def setUser(username):
-        
         GNConnection.user = username
     
     @staticmethod
     def setPass(pword):
-        
         GNConnection.password = pword
 
     

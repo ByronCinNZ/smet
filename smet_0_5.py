@@ -120,7 +120,6 @@ class MyFrame(wx.Frame):
         if clr:
             self.contents.SetValue("")
         
-        print "before if:", message
         print type(message).__name__
         if type(message).__name__ ==  '_Element':
             message = etree.tostring(message)
@@ -128,22 +127,21 @@ class MyFrame(wx.Frame):
             message = prettyDict(message)
         else:
             message = str(message)
-        print message
             
         self.contents.AppendText(message)
             
         
         
-    def extendData(self, content, parent):
-        
-        while content.hasNext():
-            content.Next()
-            newItem = self.contents.AppendItem(parent, content.getLabel())
-            self.contents.SetItemText(newItem, str(content.getValue()), 1)
-            if content.getImage():
-                self.contents.SetItemImage(newItem, content.getImage(), wx.TreeItem_Normal)
-            if content.getChildren():
-                self.extendData(content.getChildren(), newItem)
+##    def extendData(self, content, parent):
+##        
+##        while content.hasNext():
+##            content.Next()
+##            newItem = self.contents.AppendItem(parent, content.getLabel())
+##            self.contents.SetItemText(newItem, str(content.getValue()), 1)
+##            if content.getImage():
+##                self.contents.SetItemImage(newItem, content.getImage(), wx.TreeItem_Normal)
+##            if content.getChildren():
+##                self.extendData(content.getChildren(), newItem)
             
             
     
@@ -208,7 +206,7 @@ class MyFrame(wx.Frame):
         for control in self.loginControls:
             id = control.GetId()
             self.tb.RemoveTool(id)
-        pacetxt = 10*" " + "Username :  "
+        pacetxt = 10*" " + "Username :  " #TODO: Use sizers (or equiv) to aid frame resizing.
         
         self.utext = wx.StaticText(self.tb, -1, pacetxt, pos=wx.Point(800,-1), style=wx.ALIGN_RIGHT)
         self.tb.AddControl(self.utext)   
@@ -280,7 +278,8 @@ class MyFrame(wx.Frame):
         if self.cb.GetSelection():
             selString = self.cb.GetString(self.cb.GetSelection())
             selId = self.controller.tmpltList[selString]        
-            self.tmpltXML = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)        
+            self.tmpltXML, self.schema = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)  
+            print "hi", self.schema      
             self.postMessage(self.tmpltXML, 1)
         
 

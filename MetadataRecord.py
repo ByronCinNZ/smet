@@ -1,7 +1,7 @@
 #   Updated 8 January 2010 to remove any direct database calls with psycopg2
 #       all calls now go through GeoNetwork xml -BC
 
-import httplib, urllib, urllib2, requests
+import requests
 from lxml import etree
 from pythonutils import OrderedDict
 
@@ -118,8 +118,11 @@ class metadataRecord(object):
             
     def getTemplateMDRecord(self, user, pword, fileID):
 
-        # Select iso 19139 template metadata from the data column. 
-        return GNConnection.xmlcall('xml.metadata.get', uuid=fileID)
+        # Select template metadata from the data column. 
+        geoinfo = GNConnection.xmlcall('q', uuid=fileID, template='y')
+        
+        schema = geoinfo.find('.//schema').text
+        return GNConnection.xmlcall('xml.metadata.get', uuid=fileID), schema
                     
     def submitMDRecord(self, mdRecord, user, pword):
         tree = GNConnection.xmlcall('xml.metadata.insert', 
@@ -130,7 +133,7 @@ class metadataRecord(object):
                                     group=2, # get user group?
                                     category=1, # ask for category?
                                     validate='off', #validation would need additional interfaces
-                                    uuidAction='generateUUID)
+                                    uuidAction='generateUUID')
 
         id = tree.find('./id').text
         uuid = tree.find('./uuid').text
@@ -211,7 +214,8 @@ class GNConnection(object):
         return r.status_code
     
     @staticmethod
-    def xmlcall(_service, _param=E.request(), **kwargs):
+    def xmlcall(_service, _param=E.request, **kwargs):
+        if callable(_param): _param = _param()
         for key, value in kwargs.items():
             _param.append(E(key, value))
         param = etree.tostring(_param)

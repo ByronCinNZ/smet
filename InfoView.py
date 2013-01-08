@@ -44,19 +44,18 @@ class InfoView(wx.Panel):
 		dc.SetPen(wx.Pen("blue", 2))
 		dc.DrawLine(8,0, 8,self.GetSize()[1])
 
-	def showIterator(self, iter_):
-		while iter_.hasNext():
-			iter_.next()
-			self.addTextInfoRow(iter_.getLabel(), iter_.getValue(), iter_.getChildren())
+	def showValue(self, val):
+		for data in types.get(type(val).__name__, lambda a:val)(val):
+			self.addTextInfoRow(*data)
 
 	def addTextInfoRow(self, label, value, info):
-		labelText = wx.StaticText(self, -1, str(label)+": ")
+		labelText = wx.StaticText(self, -1, str(label)+": " if label else "")
 		labelText.SetFont(self.labelFont)
-		valueText = stattext.GenStaticText(self, -1, str(value)) # Necessary for underline
+		valueText = stattext.GenStaticText(self, -1, str(value) if value else "") # Necessary for underline
 		valueText.SetFont(self.valueFont)
 		if info:
 			valueView = InfoView(self, -1)
-			valueView.showIterator(info)
+			valueView.showValue(info)
 
 		self.sizer.Add(labelText, (self.row, 1), flag=wx.ALIGN_CENTER_VERTICAL)
 		self.sizer.Add(valueText, (self.row, 2))
@@ -66,113 +65,39 @@ class InfoView(wx.Panel):
 			self.row += valueView.row + 1
 
 #--
+types = {}
+def key(key, dict_=types):
+	def inner(value): 
+		dict_[key] = value
+		return value
+	return inner
 
-class  StringIterator(object):
-    
-    def __init__(self, string):
-        self.string = string
-        self.index = True
-        
-    def hasNext(self):
-        return self.index
-    
-    def next(self):
-        self.index = False
-    
-    def getChildren(self):
-        return None
-    
-    def getLabel(self):
-        return "Message"
-    
-    def getValue(self):
-        return self.string
-    
-class DictIterator(object):
-    from pythonutils import OrderedDict
-        
-    def __init__(self, dict):
-        self.dict = dict
-        self.index = 0
-        
-    def hasNext(self):
-        index = self.index + 1
-        if index >= len(self.dict) or not self.dict.keys()[index]:
-            return False
-    
-        return True
-    
-    def next(self):
-        self.index += 1
-    
-    def getChildren(self):
-        child = self.dict.values()[self.index]
-        if type(child).__name__ == 'OrderedDict':
-           return DictIterator(child) 
-            
-        return None
-    
-    def getLabel(self):
-        keys = self.dict.keys()
-        return keys[self.index]
-    
-    def getValue(self):
-        child = self.dict.values()[self.index]
-        if not type(child).__name__ == 'OrderedDict':
-           return child
-        return ""
-'''   
-class XmlIterator(object):
-    
-    def __init__(self, xml):
-        self.xml = xml
-        self.index = 0
-        
-    def hasNext(self):
-        index = self.index + 1
-        if index >= len(self.xml) or not self.xml.getchildren()[index]:
-            return False
-    
-        return True
-    
-    def next(self):
-        self.index += 1
-    
-    def getChildren(self):
-        child = self.xml.getchildren()[self.index]
-        if not child:
-            return None
-        return xmlIterator(child) 
-    
-    def getLabel(self):
-        return self.xml.tag
-    
-    def getValue(self):
-        return self.xml.text
-'''
-class _XmlSeqIterator(object):
-	"""Private iterator for iterator over a sequence of elements."""
-	def __init__(self, xml):
-		self.xml, self.index = xml, 0
+@key('str')
+def _(string):
+	yield "Message", string, None
 
-	def hasNext(self):
-		index = self.index + 1
-		return index < len(self.xml)
 
-	def next(self):
-		self.index += 1
+@key('OrderedDict')
+def _(dict_):
+	for key, value in dict_.items():
+		yield (key, value, None) if type(value) == str else (key, "", value)
 
-	def getChildren(self):
-		return _XmlSeqIterator(self.xml[self.index]) if self.xml[self.index] else None
+@key('_Element')
+@key('Element')
+def _(xml):
+	def iterator(el):
+		for child in el:
+			yield tag(child)
+			if child.tail:
+				yield "", child.tail, None
+	tag = lambda tag: (tag.tag, tag.text, iterator(tag) if len(tag) else None)
+	yield tag(xml)
 
-	def getLabel(self):
-		return self.xml[self.index].tag
-
-	def getValue(self):
-		return self.xml.text
-
-def XmlIterator(xml):
-	return _XmlSeqIterator((xml,))
+@key('list')
+@key('tuple')
+def _(iter_):
+	for child in iter_:
+		yield "", "", child
 
 if __name__ == '__main__':
 	from xml.etree.ElementTree import XML
@@ -180,17 +105,7 @@ if __name__ == '__main__':
 
 	frame = wx.Frame(parent=None, title='InfoView')
 	info = InfoView(frame, -1)
-	info.showIterator(DictIterator(data))
+	info.showValue((data, "Hello World!", XML('<html><head><title>...</title>...</head><body>...</body></html>')))
 	frame.Show()
-
-	textFrame = wx.Frame(None, title="HelloWorld!")
-	info = InfoView(textFrame, -1)
-	info.showIterator(StringIterator("Hello World!"))
-	textFrame.Show()
-
-	xmlFrame = wx.Frame(None, title="Basic HTML")
-	info = InfoView(xmlFrame, -1)
-	info.showIterator(XmlIterator(XML('<html><head>...<title>...</title></head><body>...</body></html>')))
-	xmlFrame.Show()
 
 	app.MainLoop()

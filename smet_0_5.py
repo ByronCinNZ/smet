@@ -3,7 +3,8 @@
 # smet version 0.1 -Spatial Metadata Extraction tool -Byron Cochrane 14,Sept,2007
 #      version 0.3 -Spatial Metadata Extraction Tool -Byron Cochrane 17, Oct 2008
 
-import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser, MetadataRecord as MDR, GeoObject as GO
+import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser
+import MetadataRecord as MDR, GeoObject as GO, InfoView
 from lxml import etree 
 #import wx.lib.agw.hyperlink as hl
 
@@ -32,7 +33,8 @@ class MyFrame(wx.Frame):
         self.statusbar.SetStatusText("Statusbar")
 
         #--Layout------
-        self.contents = wx.TextCtrl(self.bkgnd, -1, "", style=wx.TE_MULTILINE)
+##        self.contents = wx.TextCtrl(self.bkgnd, -1, "", style=wx.TE_MULTILINE)
+        self.contents = InfoView.InfoView(self.bkgnd, -1)
         self.tree_ctrl = wx.TreeCtrl(self.bkgnd, -1, style=wx.TR_TWIST_BUTTONS|wx.TR_LINES_AT_ROOT|wx.TR_DEFAULT_STYLE|wx.SUNKEN_BORDER,size=(200,300))
         self.bind_(self.tree_ctrl, {wx.EVT_TREE_ITEM_ACTIVATED: 'xtrct', wx.EVT_TREE_SEL_CHANGED: 'OnItemSelected', 
                     wx.EVT_TREE_ITEM_RIGHT_CLICK: self.OnRightUp, wx.EVT_TREE_ITEM_EXPANDING: self.onExpand})
@@ -67,7 +69,8 @@ class MyFrame(wx.Frame):
             if type(action) == str: action = getattr(self.controller, action)
             self.Bind(evt, action, view)
 
-    def postMessage(self, message, clr=0):
+    def postMessage(self, message, clr=1):
+        '''
         def prettyDict(dict, indent=0):
             rep = ''
             for key, value in dict.items():
@@ -85,10 +88,18 @@ class MyFrame(wx.Frame):
             message = etree.tostring(message)
         elif type(message).__name__ == 'OrderedDict':
             message = prettyDict(message)
+        elif hasattr(message, '__iter__') and not type(message) == str:
+            for item in message:
+                self.postMessage(item, clr)
+                self.postMessage(2*'\n'+80*'_'+3*'\n', False)
+                clr = 0
+            return # No additional message to post, all recursion.
         else:
             message = str(message)
             
         self.contents.AppendText(message)
+        '''
+        self.contents.showValue(message)
     
     def postHTML(self, page):
         upstr = 'http://' + MDR.GNConnection.GNServer + "/geonetwork/srv/en/user.login?username=" + self.controller.user + "&password=" + self.controller.pword
@@ -152,9 +163,6 @@ class MyFrame(wx.Frame):
         self.tb.AddSeparator()
         
         self.libttn = self.createTbButton("Log In", self.loginButton)
-##        self.libttn = wx.Button(self.tb, 36, "Log In", (120, -1))
-##        self.Bind(wx.EVT_BUTTON, self.loginButton, self.libttn)
-##        self.tb.AddControl(self.libttn)
         
         self.loginControls = (self.userbox, ptext, self.passwordbox, self.libttn)
         self.tb.Realize()
@@ -175,9 +183,6 @@ class MyFrame(wx.Frame):
         self.tb.AddControl(itext)
         self.tb.AddSeparator()
         self.lobttn = wx.Button(" Log Out ", self.controller.logout)
-##        self.lobttn = wx.Button(self.tb, 36, " Log Out ", (120, -1))
-##        self.Bind(wx.EVT_BUTTON, self.controller.logout, self.lobttn)
-##        self.tb.AddControl(self.lobttn)
         self.tb.Realize()
         
         self.loginControls = (self.utext, itext, self.lobttn)
@@ -191,20 +196,11 @@ class MyFrame(wx.Frame):
             return item
 
         self.currentItem = event.GetItem()
-#        id = event.GetItem()
         menu = wx.Menu()
         createMenuItem("Display", 'xtrct')
         createMenuItem("Merge", 'merge')
         createMenuItem("Submit", 'submitGN')
         #TODO: A "make root dir" option would be handy
-##        self.item1 = menu.Append(-1, "Display")
-##        self.item2 = menu.Append(wx.ID_ANY, "Merge")
-##        self.item3 = menu.Append(wx.ID_ANY, "Submit")
-##        #self.item4 = menu.Append(wx.ID_ANY, "Make root dir") # needs separation in controller.getRootDir
-##        self.Bind(wx.EVT_MENU, self.controller.xtrct, self.item1)
-##        self.Bind(wx.EVT_MENU, self.controller.merge, self.item2)
-##        self.Bind(wx.EVT_MENU, self.controller.submitGN, self.item3)
-##        #self.Bind(wx.EVT_MENU, self.buildTree, self.item4)
         
         self.PopupMenu(menu)
         menu.Destroy()
@@ -224,7 +220,7 @@ class MyFrame(wx.Frame):
             selId = self.controller.tmpltList[selString]        
             self.tmpltXML, self.schema = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)  
             print "hi", self.schema      
-            self.postMessage(self.tmpltXML, 1)
+            self.postMessage(self.tmpltXML)
         
 
         
@@ -443,7 +439,7 @@ class MyControls(object):
         
         
     def xtrct(self, event): # wxGlade: MyFrame.<event_handler>
-        
+        output = []
         ## status bar is not clearing - done 14-3-9 BC
         self.frame.statusbar.SetStatusText("Loading......")
         itemID = self.frame.currentItem
@@ -461,12 +457,8 @@ class MyControls(object):
 
         for name in mdf :
             if os.path.exists(name):
-                mdl = 1
-                self.frame.postMessage("Metadata link exist!")
-                self.frame.postMessage(2*'\n'+80*'_'+3*'\n',1)
-                fo = open(name, 'r')
-                self.frame.postMessage(fo.read(),mdl)
-                self.frame.postMessage(2*'\n'+80*'_'+3*'\n',1)
+                with open(name, 'r') as fo:
+                    output += ("Metadata link exists!", fo.read())
             
         # new stuff for _0_3
         ## refactor - move to util so util checks datatype
@@ -482,14 +474,14 @@ class MyControls(object):
             print 'md'
             ## Can I find a way to avoid passing self?
             ##display = md.displayMDRecord(mdrecord)
-            self.frame.postMessage(mdrecord, mdl)
+            output.append(mdrecord)
             del mdrecord
-            self.frame.postMessage(80*'_'+3*'\n',0)
+            self.frame.postMessage(output)
             
         # end new stuff
 
         else :
-            self.frame.postMessage("Non-gis Data",mdl)
+            self.frame.postMessage("Non-gis Data")
         self.frame.statusbar.SetStatusText("Statusbar")
 
 

@@ -5,7 +5,7 @@ A view for displaying (and editing) highly structured data communicated in XML.
 Inspired by METlite and GeoNetwork.
 """
 import wx
-from wx.lib import stattext
+from wx.lib import stattext, scrolledpanel
 from pythonutils import OrderedDict
 
 data = OrderedDict()
@@ -22,6 +22,7 @@ data['Another label'] = "Another Value"
 
 class InfoView(wx.Panel):
 	def __init__(self, *args, **kwargs):
+		data = kwargs.pop('data', ())
 		wx.Panel.__init__(self, *args, **kwargs)
 		self.SetBackgroundColour("white")
 		self.Bind(wx.EVT_PAINT, self.onPaint)
@@ -34,10 +35,13 @@ class InfoView(wx.Panel):
 		self.sizer.AddGrowableCol(2)
 		self.row = 0
 
+		self.showValue(data)
+
 		# activate sizer
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 		self.sizer.SetSizeHints(self)
+		self.FitInside()
 
 	def onPaint(self, evt):
 		dc = wx.PaintDC(self)
@@ -54,15 +58,14 @@ class InfoView(wx.Panel):
 		valueText = stattext.GenStaticText(self, -1, str(value) if value else "") # Necessary for underline
 		valueText.SetFont(self.valueFont)
 		if info:
-			valueView = InfoView(self, -1)
-			valueView.showValue(info)
+			valueView = InfoView(self, -1, data=info)
 
 		self.sizer.Add(labelText, (self.row, 1), flag=wx.ALIGN_CENTER_VERTICAL)
 		self.sizer.Add(valueText, (self.row, 2))
 		self.row += 1
 		if info:
-			self.sizer.Add(valueView, (self.row, 1), (valueView.row + 1,2), wx.EXPAND, 5)
-			self.row += valueView.row + 1
+			self.sizer.Add(valueView, (self.row, 1), (valueView.row,2), wx.EXPAND, 5)
+			self.row += valueView.row
 
 #--
 types = {}
@@ -73,6 +76,7 @@ def key(key, dict_=types):
 	return inner
 
 @key('str')
+@key('int')
 def _(string):
 	yield "Message", string, None
 
@@ -80,7 +84,7 @@ def _(string):
 @key('OrderedDict')
 def _(dict_):
 	for key, value in dict_.items():
-		yield (key, value, None) if type(value) == str else (key, "", value)
+		yield (key, "", value) if type(value).__name__ in types else (key, value, None)
 
 @key('_Element')
 @key('Element')
@@ -104,8 +108,31 @@ if __name__ == '__main__':
 	app = wx.PySimpleApp()
 
 	frame = wx.Frame(parent=None, title='InfoView')
-	info = InfoView(frame, -1)
-	info.showValue((data, "Hello World!", XML('<html><head><title>...</title>...</head><body>...</body></html>')))
+
+	data_ = data, "Hello World!", XML('<html><head><title>...</title>...</head><body>...</body></html>')
+	# Setup a data selection menu
+	def switchDisplay(data):
+		def inner(evt):
+			global info
+			info.Destroy()
+			info = InfoView(scroll, -1, data=data)
+			scroll.SetScrollbars(1,1, *info.GetSize())
+		return inner
+
+	menuBar = wx.MenuBar()
+	menu = wx.Menu()
+	frame.Bind(wx.EVT_MENU, switchDisplay(data_), menu.AppendRadioItem(-1, "tuple"))
+	frame.Bind(wx.EVT_MENU, switchDisplay(data_[0]), menu.AppendRadioItem(-1, "OrderedDictionary"))
+	frame.Bind(wx.EVT_MENU, switchDisplay(data_[1]), menu.AppendRadioItem(-1, "str"))
+	frame.Bind(wx.EVT_MENU, switchDisplay(data_[2]), menu.AppendRadioItem(-1, "XML"))
+	menuBar.Append(menu, "Data")
+	frame.SetMenuBar(menuBar)
+
+
+	scroll = wx.ScrolledWindow(frame, -1)
+	info = InfoView(scroll, -1)
+	scroll.SetScrollbars(1,1, *info.GetSize())
+
 	frame.Show()
 
 	app.MainLoop()

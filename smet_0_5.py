@@ -34,7 +34,8 @@ class MyFrame(wx.Frame):
 
         #--Layout------
 ##        self.contents = wx.TextCtrl(self.bkgnd, -1, "", style=wx.TE_MULTILINE)
-        self.contents = InfoView.InfoView(self.bkgnd, -1)
+        self.contentsScroller = wx.ScrolledWindow(self.bkgnd, -1)
+        self.contents = InfoView.InfoView(self.contentsScroller, -1)
         self.tree_ctrl = wx.TreeCtrl(self.bkgnd, -1, style=wx.TR_TWIST_BUTTONS|wx.TR_LINES_AT_ROOT|wx.TR_DEFAULT_STYLE|wx.SUNKEN_BORDER,size=(200,300))
         self.bind_(self.tree_ctrl, {wx.EVT_TREE_ITEM_ACTIVATED: 'xtrct', wx.EVT_TREE_SEL_CHANGED: 'OnItemSelected', 
                     wx.EVT_TREE_ITEM_RIGHT_CLICK: self.OnRightUp, wx.EVT_TREE_ITEM_EXPANDING: self.onExpand})
@@ -58,7 +59,7 @@ class MyFrame(wx.Frame):
 
         hbox.Add(self.tb, proportion=0, border=5)
         self.vbox.Add(self.tree_ctrl, proportion=0, flag=wx.EXPAND|wx.FIXED_MINSIZE|wx.TR_HAS_BUTTONS, border=7)
-        self.vbox.Add(self.contents, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+        self.vbox.Add(self.contentsScroller, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
         hbox.Add(self.vbox, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
 
         self.bkgnd.SetSizer(self.vbox)
@@ -99,7 +100,10 @@ class MyFrame(wx.Frame):
             
         self.contents.AppendText(message)
         '''
-        self.contents.showValue(message)
+        self.contents.Destroy()
+        del self.contents # Fixes weird GC bug (something to do with C++)
+        self.contents = InfoView.InfoView(self.contentsScroller, -1, data=message)
+        self.contentsScroller.SetScrollbars(1,1, *self.contents.GetSize())
     
     def postHTML(self, page):
         upstr = 'http://' + MDR.GNConnection.GNServer + "/geonetwork/srv/en/user.login?username=" + self.controller.user + "&password=" + self.controller.pword

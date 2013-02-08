@@ -2,7 +2,7 @@ import os, time
 from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
-from pythonutils import OrderedDict
+from collections import OrderedDict
 import pyproj
 import MetadataRecord as MDR
 

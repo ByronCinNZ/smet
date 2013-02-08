@@ -5,8 +5,7 @@
 
 import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser
 import MetadataRecord as MDR, GeoObject as GO, InfoView
-from lxml import etree 
-#import wx.lib.agw.hyperlink as hl
+from xml.etree import ElementTree as etree
 
 if wx.Platform == '__WXMSW__':
     import wx.lib.iewin as iewin

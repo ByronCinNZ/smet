@@ -6,7 +6,7 @@ Inspired by METlite and GeoNetwork.
 """
 import wx
 from wx.lib import stattext, scrolledpanel
-from pythonutils import OrderedDict
+from collections import OrderedDict
 
 data = OrderedDict()
 data['Title'] = "InfoView"
@@ -84,7 +84,8 @@ def _(string):
 @key('OrderedDict')
 def _(dict_):
 	for key, value in dict_.items():
-		yield (key, "", value) if type(value).__name__ in types else (key, value, None)
+##		yield (key, "", value) if type(value).__name__ in types else (key, value, None)
+		yield (key, value, None) if type(value) in (str, int) else (key, "", None)
 
 @key('_Element')
 @key('Element')

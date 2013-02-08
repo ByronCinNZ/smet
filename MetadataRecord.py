@@ -2,8 +2,8 @@
 #       all calls now go through GeoNetwork xml -BC
 
 import requests
-from lxml import etree
-from pythonutils import OrderedDict
+from xml.etree import ElementTree as etree
+from collections import OrderedDict
 
 from lxml.builder import E
 
@@ -99,9 +99,6 @@ class metadataRecord(object):
         n = 1
        
         for row in rows:
-            
-            #print etree.tostring(row)
-            # Find the title and the guid
             title = row.find('title').text
             guid = row.find('{http://www.fao.org/geonetwork}info/uuid').text
             schema = row.find('{http://www.fao.org/geonetwork}info/schema').text
@@ -214,10 +211,10 @@ class GNConnection(object):
         return r.status_code
     
     @staticmethod
-    def xmlcall(_service, _param=E.request, **kwargs):
+    def xmlcall(_service, _param=lambda:etree.Element("request"), **_kwargs):
         if callable(_param): _param = _param()
-        for key, value in kwargs.items():
-            _param.append(E(key, value))
+        for key, value in _kwargs.items():
+            etree.SubElement(_param, key).text = value
         param = etree.tostring(_param)
         print param
 

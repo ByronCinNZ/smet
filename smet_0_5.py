@@ -3,9 +3,9 @@
 # smet version 0.1 -Spatial Metadata Extraction tool -Byron Cochrane 14,Sept,2007
 #      version 0.3 -Spatial Metadata Extraction Tool -Byron Cochrane 17, Oct 2008
 
-import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser, MetadataRecord as MDR, GeoObject as GO
-from lxml import etree 
-#import wx.lib.agw.hyperlink as hl
+import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser
+import MetadataRecord as MDR, GeoObject as GO, InfoView
+from xml.etree import ElementTree as etree
 
 if wx.Platform == '__WXMSW__':
     import wx.lib.iewin as iewin
@@ -19,95 +19,58 @@ if wx.Platform == '__WXMSW__':
 
 class MyFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-        # begin wxGlade: MyFrame.__init__
-
-        self.path = ''
-        self.dlg = ''
-        self.fc = ''
+        self.path = self.dlg = self.fc = ''
         cdir = os.getcwd()
         con = MDR.GNConnection().getSettings(cdir)
         
- 
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        kwds["size"] =(900,500)
+        kwds.update({"style":wx.DEFAULT_FRAME_STYLE, "size":(900,500)}) 
         wx.Frame.__init__(self, *args, **kwds)
         self.controller = MyControls(self)
         
         self.bkgnd = wx.Panel(self, -1)
         self.statusbar = self.CreateStatusBar()
         self.statusbar.SetStatusText("Statusbar")
-        #--Layout------
-##        self.contents = wx.gizmos.TreeListCtrl(self.bkgnd, -1, style=wx.TR_HIDE_ROOT|wx.TR_ROW_LINES)
-##        self.contents.AddColumn('property')
-##        self.contents.AddColumn('description')
-##        self.contents.SetMainColumn(0)
-##        self.dataRoot = self.contents.AddRoot("root")
-##        self.contents.Expand(self.dataRoot)
-##        self.contents.SetColumnWidth(0, 200)
-##        self.contents.SetColumnWidth(1, 400)
-        self.contents = wx.TextCtrl(self.bkgnd, -1, "", style=wx.TE_MULTILINE)
 
+        #--Layout------
+##        self.contents = wx.TextCtrl(self.bkgnd, -1, "", style=wx.TE_MULTILINE)
+        self.contentsScroller = wx.ScrolledWindow(self.bkgnd, -1)
+        self.contents = InfoView.InfoView(self.contentsScroller, -1)
         self.tree_ctrl = wx.TreeCtrl(self.bkgnd, -1, style=wx.TR_TWIST_BUTTONS|wx.TR_LINES_AT_ROOT|wx.TR_DEFAULT_STYLE|wx.SUNKEN_BORDER,size=(200,300))
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.controller.xtrct, self.tree_ctrl)
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.controller.OnItemSelected, self.tree_ctrl)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightUp, self.tree_ctrl)
-        #self.Bind(wx.EVT_CLOSE, MDR.GNConnection.closeDB())
+        self.bind_(self.tree_ctrl, {wx.EVT_TREE_ITEM_ACTIVATED: 'xtrct', wx.EVT_TREE_SEL_CHANGED: 'OnItemSelected', 
+                    wx.EVT_TREE_ITEM_RIGHT_CLICK: self.OnRightUp, wx.EVT_TREE_ITEM_EXPANDING: self.onExpand})
+
         #---Icons -------default images here
         isz = (16,16)
-        il = wx.ImageList(isz[0], isz[1])
-        self.idx = {}
-        self.idx['fldr']     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
-        self.idx['fldropen'] = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
-        self.idx['file']     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_LIST_VIEW, wx.ART_OTHER, isz))
-        self.idx['img']      = il.Add(wx.ArtProvider_GetBitmap(wx.ART_MISSING_IMAGE, wx.ART_OTHER, isz))
-        self.idx['gdb']      = il.Add(wx.ArtProvider_GetBitmap(wx.ART_HARDDISK, wx.ART_OTHER, isz))
-        self.tree_ctrl.SetImageList(il)
-        self.il = il
+        self.il = wx.ImageList(isz[0], isz[1])
 
-        #---Toolbar section---#move new method MyFrame.ToolBar
+        idx = {'fldr':wx.ART_FOLDER, 'fldropen':wx.ART_FILE_OPEN, 'file':wx.ART_LIST_VIEW, 'img':wx.ART_MISSING_IMAGE, 'gdb':wx.ART_HARDDISK}
+        self.idx = {k:self.il.Add(wx.ArtProvider_GetBitmap(v, wx.ART_OTHER, isz)) for k, v in idx.items()}
+        self.tree_ctrl.SetImageList(self.il)
+
+
         self.ToolBar()
-        
-        self.__set_properties()
-        self.__do_layout()
-        
-        # end wxGlade
-        
-        # register the self.onExpand function to be called
-        wx.EVT_TREE_ITEM_EXPANDING(self.tree_ctrl, self.tree_ctrl.GetId(), self.onExpand)
-
-
-    def __set_properties(self):
-        # begin wxGlade: MyFrame.__set_properties
         self.SetTitle("Spatial Metadata Extractor Tool")
-        # end wxGlade
+        self.__do_layout()
 
     def __do_layout(self):
-        # begin wxGlade: MyFrame.__do_layout
-        
         hbox = wx.BoxSizer(wx.VERTICAL)
         self.vbox = wx.BoxSizer(wx.HORIZONTAL)
+
         hbox.Add(self.tb, proportion=0, border=5)
         self.vbox.Add(self.tree_ctrl, proportion=0, flag=wx.EXPAND|wx.FIXED_MINSIZE|wx.TR_HAS_BUTTONS, border=7)
-        self.vbox.Add(self.contents, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+        self.vbox.Add(self.contentsScroller, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
         hbox.Add(self.vbox, proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
+
         self.bkgnd.SetSizer(self.vbox)
         self.Layout()
-        # end wxGlade
         
-        
-    def postMessage(self, message, clr=0):
-##        if clr==0:
-##            self.contents.DeleteChildren(self.dataRoot)
-##
-##        if type(message).__name__ == 'str':
-##            data = stringIterator(message)
-##        elif type(message).__name__ == 'OrderedDict':
-##            data = dictIterator(message)
-##        elif type(message).__name__ == "_Element":
-##            data = xmlIterator(message)
-##
-##        self.extendData(data, self.dataRoot)
+    def bind_(self, view, evts):
+        for evt, action in evts.items(): 
+            if type(action) == str: action = getattr(self.controller, action)
+            self.Bind(evt, action, view)
 
+    def postMessage(self, message, clr=1):
+        '''
         def prettyDict(dict, indent=0):
             rep = ''
             for key, value in dict.items():
@@ -120,49 +83,34 @@ class MyFrame(wx.Frame):
         if clr:
             self.contents.SetValue("")
         
-        print "before if:", message
         print type(message).__name__
         if type(message).__name__ ==  '_Element':
             message = etree.tostring(message)
         elif type(message).__name__ == 'OrderedDict':
             message = prettyDict(message)
+        elif hasattr(message, '__iter__') and not type(message) == str:
+            for item in message:
+                self.postMessage(item, clr)
+                self.postMessage(2*'\n'+80*'_'+3*'\n', False)
+                clr = 0
+            return # No additional message to post, all recursion.
         else:
             message = str(message)
-        print message
             
         self.contents.AppendText(message)
-            
-        
-        
-    def extendData(self, content, parent):
-        
-        while content.hasNext():
-            content.Next()
-            newItem = self.contents.AppendItem(parent, content.getLabel())
-            self.contents.SetItemText(newItem, str(content.getValue()), 1)
-            if content.getImage():
-                self.contents.SetItemImage(newItem, content.getImage(), wx.TreeItem_Normal)
-            if content.getChildren():
-                self.extendData(content.getChildren(), newItem)
-            
-            
+        '''
+        self.contents.Destroy()
+        del self.contents # Fixes weird GC bug (something to do with C++)
+        self.contents = InfoView.InfoView(self.contentsScroller, -1, data=message)
+        self.contentsScroller.SetScrollbars(1,1, *self.contents.GetSize())
     
     def postHTML(self, page):
         upstr = 'http://' + MDR.GNConnection.GNServer + "/geonetwork/srv/en/user.login?username=" + self.controller.user + "&password=" + self.controller.pword
         login = webbrowser.open(upstr)        
         webbrowser.open(page)
-        
-##        self.ie = iewin.IEHtmlWindow(self.bkgnd,  wx.ID_ANY, pos=wx.Point(150, 100), size=wx.Size(300, 300), style=0, name='IEHtmlWindow')
-##        
-##        self.vbox.Add(self.ie,proportion=1, flag=wx.EXPAND|wx.ALL, border=5)
-##        self.bkgnd.SetSizer(self.vbox)
-##
-##        self.ie.LoadUrl(page)
-##    
     
     def ToolBar(self):
-
-            
+        # TODO: Replace with panel for better sizing
         tsize = (24,24)
         
         folder_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER, wx.ART_TOOLBAR, tsize)
@@ -175,7 +123,6 @@ class MyFrame(wx.Frame):
         
         self.filename = wx.TextCtrl(self.tb, -1, size=(200,-1), style=wx.TE_LEFT | wx.TB_NOICONS | wx.TE_PROCESS_ENTER)
         self.tb.AddControl(self.filename)
-       #self.filename.SetValue(MDR.GNConnection.rootDir)
         self.Bind(wx.EVT_TEXT_ENTER, self.controller.getRootDir, self.filename)
         self.buildTree()
 
@@ -183,8 +130,6 @@ class MyFrame(wx.Frame):
         
         self.tb.SetToolBitmapSize(tsize)
         
-
-
         # This combobox is created with no values initially.
         #samplelist = ["  --- Template List ---                           "]
         self.cb = wx.Choice(self.tb, -1, size=(200, -1))
@@ -192,8 +137,6 @@ class MyFrame(wx.Frame):
         self.cb.Append("Template List - Please log in", None)
         self.cb.Select(0)
         self.tmpltXML = None
-        
-        
         
         self.tb.AddControl(self.cb)
         
@@ -204,34 +147,34 @@ class MyFrame(wx.Frame):
         
         
     def loginTB(self):
-        
+        def addTextEntry(label, style, helptext):
+            label = wx.StaticText(self.tb, -1, label, style=wx.ALIGN_RIGHT)
+            self.tb.AddControl(label)
+            entry = wx.TextCtrl(self.tb, 34, size=(50, -1), style=style)
+            entry.SetHelpText(helptext)
+            self.tb.AddControl(entry)
+            return label, entry
+
         for control in self.loginControls:
             id = control.GetId()
             self.tb.RemoveTool(id)
-        pacetxt = 10*" " + "Username :  "
+        pacetxt = 10*" " + "Username :  " #TODO: Use sizers (or equiv) to aid frame resizing.
         
-        self.utext = wx.StaticText(self.tb, -1, pacetxt, pos=wx.Point(800,-1), style=wx.ALIGN_RIGHT)
-        self.tb.AddControl(self.utext)   
-        self.userbox = wx.TextCtrl(self.tb, 34, size=(50,-1))
-        self.userbox.SetHelpText("Enter your GeoNetwork User Name Here")
-        self.tb.AddControl(self.userbox)
-        
-        
-        ptext = wx.StaticText(self.tb, -1, "  Password : ", style=wx.ALIGN_RIGHT) 
-        self.tb.AddControl(ptext)   
-        self.passwordbox = wx.TextCtrl(self.tb, 35, size=(50,-1), style=wx.TE_PASSWORD )
-        self.passwordbox.SetHelpText("Enter your GeoNetwork Password Here")
+        self.utext, self.userbox = addTextEntry(pacetxt, 0, "Enter your GeoNetwork User Name here.")
+        ptext, self.passwordbox = addTextEntry("  Password : ", wx.TE_PASSWORD, "Enter your GeoNetwork Password here.")
         self.Bind(wx.EVT_TEXT_ENTER, self.loginButton, self.passwordbox)
-        self.tb.AddControl(self.passwordbox)
         self.tb.AddSeparator()
         
-        self.libttn = wx.Button(self.tb, 36, "Log In", (120, -1))
-        self.Bind(wx.EVT_BUTTON, self.loginButton, self.libttn)
-        self.tb.AddControl(self.libttn)
+        self.libttn = self.createTbButton("Log In", self.loginButton)
         
         self.loginControls = (self.userbox, ptext, self.passwordbox, self.libttn)
         self.tb.Realize()
 
+    def createTbButton(self, label, action):
+        bttn = wx.Button(self.tb, 36, label, (120, -1))
+        self.Bind(wx.EVT_BUTTON, action, bttn)
+        self.tb.AddControl(bttn)
+        return bttn
 
     def logoutTB(self):
         for control in self.loginControls:
@@ -242,26 +185,25 @@ class MyFrame(wx.Frame):
         itext = wx.StaticText(self.tb, -1, pacetxt, style=wx.ALIGN_RIGHT)
         self.tb.AddControl(itext)
         self.tb.AddSeparator()
-        self.lobttn = wx.Button(self.tb, 36, " Log Out ", (120, -1))
-        self.Bind(wx.EVT_BUTTON, self.controller.logout, self.lobttn)
-        self.tb.AddControl(self.lobttn)
+        self.lobttn = wx.Button(" Log Out ", self.controller.logout)
         self.tb.Realize()
         
         self.loginControls = (self.utext, itext, self.lobttn)
         
         
     def OnRightUp(self, event):
+        print "Heard right click."
+        def createMenuItem(label, action):
+            item = menu.Append(wx.ID_ANY, label)
+            self.Bind(wx.EVT_MENU, getattr(self.controller, action), item)
+            return item
+
         self.currentItem = event.GetItem()
-        id = event.GetItem()
         menu = wx.Menu()
-        self.item1 = menu.Append(-1, "Display")
-        self.item2 = menu.Append(wx.ID_ANY, "Merge")
-        self.item3 = menu.Append(wx.ID_ANY, "Submit")
-        #self.item4 = menu.Append(wx.ID_ANY, "Make root dir") # needs separation in controller.getRootDir
-        self.Bind(wx.EVT_MENU, self.controller.xtrct, self.item1)
-        self.Bind(wx.EVT_MENU, self.controller.merge, self.item2)
-        self.Bind(wx.EVT_MENU, self.controller.submitGN, self.item3)
-        #self.Bind(wx.EVT_MENU, self.buildTree, self.item4)
+        createMenuItem("Display", 'xtrct')
+        createMenuItem("Merge", 'merge')
+        createMenuItem("Submit", 'submitGN')
+        #TODO: A "make root dir" option would be handy
         
         self.PopupMenu(menu)
         menu.Destroy()
@@ -276,12 +218,12 @@ class MyFrame(wx.Frame):
         
 
     def tmpltChoice(self, event):
-        
         if self.cb.GetSelection():
             selString = self.cb.GetString(self.cb.GetSelection())
             selId = self.controller.tmpltList[selString]        
-            self.tmpltXML = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)        
-            self.postMessage(self.tmpltXML, 1)
+            self.tmpltXML, self.schema = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)  
+            print "hi", self.schema      
+            self.postMessage(self.tmpltXML)
         
 
         
@@ -500,7 +442,7 @@ class MyControls(object):
         
         
     def xtrct(self, event): # wxGlade: MyFrame.<event_handler>
-        
+        output = []
         ## status bar is not clearing - done 14-3-9 BC
         self.frame.statusbar.SetStatusText("Loading......")
         itemID = self.frame.currentItem
@@ -518,12 +460,8 @@ class MyControls(object):
 
         for name in mdf :
             if os.path.exists(name):
-                mdl = 1
-                self.frame.postMessage("Metadata link exist!")
-                self.frame.postMessage(2*'\n'+80*'_'+3*'\n',1)
-                fo = open(name, 'r')
-                self.frame.postMessage(fo.read(),mdl)
-                self.frame.postMessage(2*'\n'+80*'_'+3*'\n',1)
+                with open(name, 'r') as fo:
+                    output += ("Metadata link exists!", fo.read())
             
         # new stuff for _0_3
         ## refactor - move to util so util checks datatype
@@ -539,14 +477,14 @@ class MyControls(object):
             print 'md'
             ## Can I find a way to avoid passing self?
             ##display = md.displayMDRecord(mdrecord)
-            self.frame.postMessage(mdrecord, mdl)
+            output.append(mdrecord)
             del mdrecord
-            self.frame.postMessage(80*'_'+3*'\n',0)
+            self.frame.postMessage(output)
             
         # end new stuff
 
         else :
-            self.frame.postMessage("Non-gis Data",mdl)
+            self.frame.postMessage("Non-gis Data")
         self.frame.statusbar.SetStatusText("Statusbar")
 
 
@@ -652,100 +590,6 @@ class MyControls(object):
         self.frame.cb.Append("Template List - Please log in", None)
         self.frame.cb.Select(0)
         self.frame.loginTB()
-        
-        
-class  stringIterator(object):
-    
-    def __init__(self, string):
-        self.string = string
-        self.index = True
-        
-    def hasNext(self):
-        return self.index
-    
-    def Next(self):
-        self.index = False
-        
-    def getImage(self):
-        return None
-    
-    def getChildren(self):
-        return None
-    
-    def getLabel(self):
-        return "Message"
-    
-    def getValue(self):
-        return self.string
-    
-class dictIterator(object):
-    from pythonutils import OrderedDict
-        
-    def __init__(self, dict):
-        self.dict = dict
-        self.index = 0
-        
-    def hasNext(self):
-        index = self.index + 1
-        if index >= len(self.dict) or not self.dict.keys()[index]:
-            return False
-    
-        return True
-    
-    def Next(self):
-        self.index += 1
-        
-    def getImage(self):
-        return None
-    
-    def getChildren(self):
-        child = self.dict.values()[self.index]
-        if type(child).__name__ == 'OrderedDict':
-           return dictIterator(child) 
-            
-        return None
-    
-    def getLabel(self):
-        keys = self.dict.keys()
-        return keys[self.index]
-    
-    def getValue(self):
-        child = self.dict.values()[self.index]
-        if not type(child).__name__ == 'OrderedDict':
-           return child
-        return ""
-    
-class xmlIterator(object):
-    
-    def __init__(self, xml):
-        self.xml = xml
-        self.index = 0
-        
-    def hasNext(self):
-        index = self.index + 1
-        if index >= len(self.xml) or not self.xml.getchildren()[index]:
-            return False
-    
-        return True
-    
-    def Next(self):
-        self.index += 1
-        
-    def getImage(self):
-        return None
-    
-    def getChildren(self):
-        child = self.xml.getchildren()[self.index]
-        if not child:
-            return None
-        return xmlIterator(child) 
-    
-    def getLabel(self):
-        return self.xml.tag
-    
-    def getValue(self):
-        return self.xml.text
-
 
 
 if __name__ == "__main__":

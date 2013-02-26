@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?> 
+<!-- Please configure appropriately and save as 'SMETconfig.xml' -->
 <config>
 	<GNServer>localhost:8080</GNServer>
 	<rootDir>/home/byron</rootDir>
 	<projData>/home/byron/Documents/smet-dev/projData/</projData>
-</config>	    
+</config>

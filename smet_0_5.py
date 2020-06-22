@@ -3,7 +3,7 @@
 # smet version 0.1 -Spatial Metadata Extraction tool -Byron Cochrane 14,Sept,2007
 #      version 0.3 -Spatial Metadata Extraction Tool -Byron Cochrane 17, Oct 2008
 
-import wx, wx.gizmos, os, urllib2, urllib, dircache, webbrowser
+import wx, wx.gizmos, os, urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error, dircache, webbrowser
 import MetadataRecord as MDR, GeoObject as GO, InfoView
 from xml.etree import ElementTree as etree
 
@@ -44,7 +44,7 @@ class MyFrame(wx.Frame):
         self.il = wx.ImageList(isz[0], isz[1])
 
         idx = {'fldr':wx.ART_FOLDER, 'fldropen':wx.ART_FILE_OPEN, 'file':wx.ART_LIST_VIEW, 'img':wx.ART_MISSING_IMAGE, 'gdb':wx.ART_HARDDISK}
-        self.idx = {k:self.il.Add(wx.ArtProvider_GetBitmap(v, wx.ART_OTHER, isz)) for k, v in idx.items()}
+        self.idx = {k:self.il.Add(wx.ArtProvider_GetBitmap(v, wx.ART_OTHER, isz)) for k, v in list(idx.items())}
         self.tree_ctrl.SetImageList(self.il)
 
 
@@ -65,7 +65,7 @@ class MyFrame(wx.Frame):
         self.Layout()
         
     def bind_(self, view, evts):
-        for evt, action in evts.items(): 
+        for evt, action in list(evts.items()):
             if type(action) == str: action = getattr(self.controller, action)
             self.Bind(evt, action, view)
 
@@ -192,7 +192,7 @@ class MyFrame(wx.Frame):
         
         
     def OnRightUp(self, event):
-        print "Heard right click."
+        print("Heard right click.")
         def createMenuItem(label, action):
             item = menu.Append(wx.ID_ANY, label)
             self.Bind(wx.EVT_MENU, getattr(self.controller, action), item)
@@ -222,7 +222,7 @@ class MyFrame(wx.Frame):
             selString = self.cb.GetString(self.cb.GetSelection())
             selId = self.controller.tmpltList[selString]        
             self.tmpltXML, self.schema = MDR.metadataRecord().getTemplateMDRecord(self.controller.user, self.controller.pword, selId)  
-            print "hi", self.schema      
+            print("hi", self.schema)
             self.postMessage(self.tmpltXML)
         
 
@@ -260,7 +260,7 @@ class MyFrame(wx.Frame):
             rDir = self.filename.GetValue()  
             self.rootID = self.tree_ctrl.AddRoot(rDir)
             self.tree_ctrl.SetPyData(self.rootID, (rDir, rDir, rDir, 1))
-            print rDir
+            print(rDir)
             self.extendTree(self.rootID)
             self.tree_ctrl.Expand(self.rootID)
         else:
@@ -286,7 +286,7 @@ class MyFrame(wx.Frame):
         
         # retrieve the associated absolute path of the parent
         parentDir = self.tree_ctrl.GetPyData(parentID)[1]
-        print parentDir
+        print(parentDir)
         # Check for geodata type to assign the proper Icons
         datatype, idx1, idx2 = GO.util.getFileType(str(parentDir))
         
@@ -302,7 +302,7 @@ class MyFrame(wx.Frame):
             self.statusbar.SetStatusText(statxt)
             subdirs = []
             dataset = record.subLayers
-            for item, value in  dataset.iteritems():
+            for item, value in  dataset.items():
                 statxt += "."
                 self.statusbar.SetStatusText(statxt)
                 icon1 = self.idx[idx1]
@@ -357,7 +357,7 @@ class MyFrame(wx.Frame):
                                 statxt += "."
                                 self.statusbar.SetStatusText(statxt)
                                 dataset = record.subLayers
-                                for grandchild, value in  dataset.iteritems():
+                                for grandchild, value in  dataset.items():
                                     grandchild_path = os.path.join(newParentPath,grandchild)
                                     pdata = [grandchild, grandchild_path, grandchild_path, False]                      
                                     grandchildID = self.tree_ctrl.AppendItem(newParentID, grandchild)
@@ -456,7 +456,7 @@ class MyControls(object):
         mdf.append(fname + '.htm')
         mdf.append(fname + '.html')
         mdf.append(fname + '.xml')
-        print mdf
+        print(mdf)
 
         for name in mdf :
             if os.path.exists(name):
@@ -466,15 +466,15 @@ class MyControls(object):
         # new stuff for _0_3
         ## refactor - move to util so util checks datatype
         datatype, idx1, idx2 = GO.util.getFileType(str(pydata[2]))
-        print datatype, idx1, idx2
+        print(datatype, idx1, idx2)
         
         if datatype:
             record = datatype(str(pydata[2]))
-            print 'record', record
+            print('record', record)
             mdrecord = record.xMeta()
-            print 'mdrecord', mdrecord
+            print('mdrecord', mdrecord)
             md = MDR.metadataRecord()
-            print 'md'
+            print('md')
             ## Can I find a way to avoid passing self?
             ##display = md.displayMDRecord(mdrecord)
             output.append(mdrecord)
@@ -575,7 +575,7 @@ class MyControls(object):
         md = MDR.metadataRecord()
         self.tmpltList = md.GetTemplateList(self.user, self.pword)
         self.userinfo = md.GetUserInfo(self.user, self.pword)      
-        keys = self.tmpltList.keys()
+        keys = list(self.tmpltList.keys())
         keys.sort()
         
         self.frame.popTmpltList(keys)

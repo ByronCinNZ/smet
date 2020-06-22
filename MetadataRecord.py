@@ -140,7 +140,7 @@ class metadataRecord(object):
     
     def mergeInfo(self, node, tree, path):
         
-        for item, value in node.iteritems():
+        for item, value in node.items():
              
             node = '/' + item
             path = path + node
@@ -207,16 +207,16 @@ class GNConnection(object):
         payload = {'username':username, 'password':pword}
         r = requests.post("http://" + GNConnection.GNServer + path, params=payload)
         GNConnection.cookie = r.cookies['JSESSIONID']
-        print r.status_code
+        print(r.status_code)
         return r.status_code
     
     @staticmethod
     def xmlcall(_service, _param=lambda:etree.Element("request"), **_kwargs):
         if callable(_param): _param = _param()
-        for key, value in _kwargs.items():
+        for key, value in list(_kwargs.items()):
             etree.SubElement(_param, key).text = value
         param = etree.tostring(_param)
-        print param
+        print(param)
 
         path ='/geonetwork/srv/' + _service
         r = requests.post("http://"  + GNConnection.GNServer + path, 
